@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Just A Motha - Mothering Edition</title>
+    <style>
+        body {
+            background-color: #8B4513;
+            color: #FFD700;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 375px;
+            height: 667px;
+            overflow: hidden;
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .game-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .game-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        #character-screen {
+            background-image: url('image1.jpg');
+        }
+        
+        #night-screen {
+            background-image: url('image2.jpg');
+        }
+        
+        .button {
+            position: absolute;
+            background-color: #663300;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            padding: 10px 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+            bottom: 40px;
+            width: 150px;
+            text-align: center;
+        }
+        
+        .button:hover {
+            background-color: #332200;
+        }
+        
+        #start-button {
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 40px;
+        }
+        
+        #snooze-button {
+            left: 20%;
+            transform: translateX(-50%);
+            bottom: 40px;
+        }
+        
+        #ignore-button {
+            right: 20%;
+            transform: translateX(50%);
+            bottom: 40px;
+        }
+        
+        #back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #663300;
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            padding: 5px 10px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="character-screen" class="game-screen active"></div>
+        <div id="night-screen" class="game-screen"></div>
+        
+        <!-- Start Game Button on Character Screen -->
+        <button id="start-button" class="button">Start Game</button>
+        
+        <!-- Snooze and Ignore Buttons (these will only be functional on night screen) -->
+        <button id="snooze-button" class="button" style="display: none;">Snooze</button>
+        <button id="ignore-button" class="button" style="display: none;">Ignore</button>
+        
+        <!-- Back Button -->
+        <button id="back-button" style="display: none;">Back</button>
+    </div>
+    
+    <script>
+        // Game elements
+        const characterScreen = document.getElementById('character-screen');
+        const nightScreen = document.getElementById('night-screen');
+        const startButton = document.getElementById('start-button');
+        const snoozeButton = document.getElementById('snooze-button');
+        const ignoreButton = document.getElementById('ignore-button');
+        const backButton = document.getElementById('back-button');
+        
+        // Start game function - Go from character screen to night screen
+        function startGame() {
+            characterScreen.classList.remove('active');
+            nightScreen.classList.add('active');
+            startButton.style.display = 'none';
+            snoozeButton.style.display = 'block';
+            ignoreButton.style.display = 'block';
+            backButton.style.display = 'block';
+        }
+        
+        // Snooze function
+        function snoozeAlarm() {
+            alert('You hit snooze... but the baby will cry again in 5 minutes!');
+            // Here you could add more game logic or transition to another screen
+        }
+        
+        // Ignore function
+        function ignoreAlarm() {
+            alert('Trying to ignore the baby... CHAOS meter increases!');
+            // Here you could add more game logic or transition to another screen
+        }
+        
+        // Back to character select function
+        function goBack() {
+            nightScreen.classList.remove('active');
+            characterScreen.classList.add('active');
+            startButton.style.display = 'block';
+            snoozeButton.style.display = 'none';
+            ignoreButton.style.display = 'none';
+            backButton.style.display = 'none';
+        }
+        
+        // Add event listeners
+        startButton.addEventListener('click', startGame);
+        snoozeButton.addEventListener('click', snoozeAlarm);
+        ignoreButton.addEventListener('click', ignoreAlarm);
+        backButton.addEventListener('click', goBack);
+    </script>
+</body>
+</html>
