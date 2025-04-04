@@ -5,167 +5,649 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Not Just A Motha - Mothering Edition</title>
     <style>
-        body {
-            background-color: #8B4513;
-            color: #FFD700;
-            font-family: 'Courier New', monospace;
+        html, body {
+            height: 100%;
+            width: 100%;
             margin: 0;
             padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Game container that fills the screen */
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            flex-direction: column;
+            background-color: #000;
+            overflow: hidden; /* Ensure no scrolling */
         }
         
-        #game-container {
+        /* Video wrapper centers content */
+        .video-wrapper {
             position: relative;
-            width: 375px;
-            height: 667px;
-            overflow: hidden;
-            border: 4px solid #FFD700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Ensure no scrolling */
         }
         
-        .game-screen {
+        /* Video screens */
+        .video-screen {
+            position: relative;
+            display: none;
+            width: 100%;
+            height: 100%;
+            display: none;
+            overflow: hidden; /* Ensure no scrolling */
+        }
+        
+        .video-screen.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Video element styling */
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain; /* Keep aspect ratio while fitting screen */
+        }
+        
+        /* UI Container - this holds all UI elements */
+        .ui-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: opacity 0.5s ease;
-            opacity: 0;
-            pointer-events: none;
+            pointer-events: none; /* Let clicks pass through to video */
+            z-index: 10;
         }
         
-        .game-screen.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        #character-screen {
-            background-image: url('image1.jpg');
-        }
-        
-        #night-screen {
-            background-image: url('image2.jpg');
-        }
-        
-        .button {
+        /* Button container at the bottom */
+        .button-container {
             position: absolute;
-            background-color: #663300;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            pointer-events: none; /* Let clicks pass through to video */
+        }
+        
+        /* Button styles */
+        .button {
+            background-color: #442211;
             color: #FFD700;
-            border: 2px solid #FFD700;
+            border: 3px solid #221100;
             padding: 10px 15px;
             font-family: 'Courier New', monospace;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             text-transform: uppercase;
-            bottom: 40px;
-            width: 150px;
             text-align: center;
+            text-shadow: 1px 1px 2px #000;
+            margin: 0 20px;
+            pointer-events: auto; /* Make buttons clickable */
         }
         
         .button:hover {
             background-color: #332200;
         }
         
+        /* Title screen start button */
+        #title-buttons {
+            justify-content: center;
+        }
+        
         #start-button {
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 40px;
+            width: 150px;
+        }
+        
+        /* Scene 1 buttons */
+        #scene1-buttons {
+            display: none;
+            justify-content: space-between;
         }
         
         #snooze-button {
-            left: 20%;
-            transform: translateX(-50%);
-            bottom: 40px;
+            width: 120px;
         }
         
         #ignore-button {
-            right: 20%;
-            transform: translateX(50%);
-            bottom: 40px;
+            width: 120px;
+        }
+        
+        /* Scene 2 buttons */
+        #scene2-buttons {
+            display: none;
+            justify-content: space-between;
+        }
+        
+        #meditate-button {
+            width: 150px;
+        }
+        
+        #getout-button {
+            width: 150px;
+        }
+        
+        /* Navigation buttons */
+        #nav-buttons {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none; /* Let clicks pass through to video */
         }
         
         #back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background-color: #663300;
-            color: #FFD700;
-            border: 2px solid #FFD700;
+            font-size: 14px;
             padding: 5px 10px;
+            display: none;
+            pointer-events: auto; /* Make button clickable */
+        }
+        
+        #sound-toggle {
+            font-size: 14px;
+            padding: 5px 10px;
+            pointer-events: auto; /* Make button clickable */
+        }
+        
+        /* Timer display */
+        #meditation-timer {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #FFD700;
+            font-size: 24px;
             font-family: 'Courier New', monospace;
-            cursor: pointer;
-            z-index: 10;
+            display: none;
+            text-shadow: 2px 2px 4px #000;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .button {
+                font-size: 14px;
+                padding: 8px 12px;
+                margin: 0 10px;
+            }
+            
+            #meditate-button, #getout-button {
+                width: 120px;
+            }
+            
+            #meditation-timer {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .button {
+                font-size: 12px;
+                padding: 6px 10px;
+                margin: 0 5px;
+            }
+            
+            #snooze-button, #ignore-button, #meditate-button, #getout-button {
+                width: 100px;
+            }
+            
+            #start-button {
+                width: 130px;
+            }
+            
+            #meditation-timer {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div id="character-screen" class="game-screen active"></div>
-        <div id="night-screen" class="game-screen"></div>
+        <!-- Title Scene -->
+        <div id="video-screen-1" class="video-screen active">
+            <video id="video-1" autoplay loop playsinline>
+                <source src="Title Scene.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
         
-        <!-- Start Game Button on Character Screen -->
-        <button id="start-button" class="button">Start Game</button>
+        <!-- Scene 1 Video -->
+        <div id="video-screen-2" class="video-screen">
+            <video id="video-2" loop playsinline>
+                <source src="Scene 1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
         
-        <!-- Snooze and Ignore Buttons (these will only be functional on night screen) -->
-        <button id="snooze-button" class="button" style="display: none;">Snooze</button>
-        <button id="ignore-button" class="button" style="display: none;">Ignore</button>
+        <!-- Scene 2 Video -->
+        <div id="video-screen-3" class="video-screen">
+            <video id="video-3" loop playsinline>
+                <source src="Scene 2.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
         
-        <!-- Back Button -->
-        <button id="back-button" style="display: none;">Back</button>
+        <!-- Scene 3 Video -->
+        <div id="video-screen-4" class="video-screen">
+            <video id="video-4" loop playsinline>
+                <source src="Scene 3.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        
+        <!-- UI Container - holds all UI elements -->
+        <div class="ui-container">
+            <!-- Navigation buttons -->
+            <div id="nav-buttons">
+                <button id="back-button" class="button">Back</button>
+                <button id="sound-toggle" class="button">🔊 On</button>
+            </div>
+            
+            <!-- Meditation timer -->
+            <div id="meditation-timer">Meditation: 2:39</div>
+            
+            <!-- Title buttons -->
+            <div id="title-buttons" class="button-container">
+                <button id="start-button" class="button">Start Game</button>
+            </div>
+            
+            <!-- Scene 1 buttons -->
+            <div id="scene1-buttons" class="button-container">
+                <button id="snooze-button" class="button">Snooze</button>
+                <button id="ignore-button" class="button">Ignore</button>
+            </div>
+            
+            <!-- Scene 2 buttons -->
+            <div id="scene2-buttons" class="button-container">
+                <button id="meditate-button" class="button">Meditate</button>
+                <button id="getout-button" class="button">Get Out</button>
+            </div>
+        </div>
     </div>
+    
+    <!-- Background Music -->
+    <audio id="background-music" loop>
+        <source src="A Day in Brooklyn.mp3" type="audio/mpeg">
+        Your browser does not support the audio tag.
+    </audio>
+    
+    <!-- Meditation Music -->
+    <audio id="meditation-music">
+        <source src="Empress Manifesto | NJAM Anthem.mp3" type="audio/mpeg">
+        Your browser does not support the audio tag.
+    </audio>
     
     <script>
         // Game elements
-        const characterScreen = document.getElementById('character-screen');
-        const nightScreen = document.getElementById('night-screen');
+        const videoScreen1 = document.getElementById('video-screen-1');
+        const videoScreen2 = document.getElementById('video-screen-2');
+        const videoScreen3 = document.getElementById('video-screen-3');
+        const videoScreen4 = document.getElementById('video-screen-4');
+        const video1 = document.getElementById('video-1');
+        const video2 = document.getElementById('video-2');
+        const video3 = document.getElementById('video-3');
+        const video4 = document.getElementById('video-4');
+        
+        // Button containers
+        const titleButtons = document.getElementById('title-buttons');
+        const scene1Buttons = document.getElementById('scene1-buttons');
+        const scene2Buttons = document.getElementById('scene2-buttons');
+        
+        // Buttons
         const startButton = document.getElementById('start-button');
         const snoozeButton = document.getElementById('snooze-button');
         const ignoreButton = document.getElementById('ignore-button');
+        const meditateButton = document.getElementById('meditate-button');
+        const getoutButton = document.getElementById('getout-button');
         const backButton = document.getElementById('back-button');
+        const soundToggle = document.getElementById('sound-toggle');
         
-        // Start game function - Go from character screen to night screen
-        function startGame() {
-            characterScreen.classList.remove('active');
-            nightScreen.classList.add('active');
-            startButton.style.display = 'none';
-            snoozeButton.style.display = 'block';
-            ignoreButton.style.display = 'block';
+        // Sound elements
+        const backgroundMusic = document.getElementById('background-music');
+        const meditationMusic = document.getElementById('meditation-music');
+        
+        // Timer element
+        const meditationTimer = document.getElementById('meditation-timer');
+        
+        // Game state
+        let currentScene = 'title';
+        let soundOn = false;
+        let meditating = false;
+        let meditationInterval;
+        
+        // Resize videos to fit screen
+        function resizeVideos() {
+            // This is handled by CSS now using object-fit: contain
+            // and making the video container fill the screen
+        }
+        
+        // Toggle sound function
+        function toggleSound() {
+            soundOn = !soundOn;
+            
+            // Update video mute states
+            video1.muted = !soundOn;
+            video2.muted = !soundOn;
+            video3.muted = !soundOn;
+            video4.muted = !soundOn;
+            
+            // Update background music
+            if (soundOn) {
+                if (!meditating) {
+                    backgroundMusic.play();
+                } else {
+                    meditationMusic.play();
+                }
+            } else {
+                backgroundMusic.pause();
+                meditationMusic.pause();
+            }
+            
+            // Update button text
+            soundToggle.textContent = soundOn ? '🔊 On' : '🔇 Off';
+        }
+        
+        // Initialize sound (videos start muted due to autoplay restrictions)
+        video1.muted = true;
+        video2.muted = true;
+        video3.muted = true;
+        video4.muted = true;
+        
+        // Go to Scene 1 (video)
+        function goToScene1() {
+            // Stop meditation if active
+            stopMeditation();
+            
+            // Hide other screens
+            videoScreen1.classList.remove('active');
+            videoScreen3.classList.remove('active');
+            videoScreen4.classList.remove('active');
+            video1.pause();
+            video3.pause();
+            video4.pause();
+            
+            // Show Scene 1 video
+            videoScreen2.classList.add('active');
+            video2.play();
+            video2.muted = !soundOn;
+            
+            // Show Scene 1 buttons
+            titleButtons.style.display = 'none';
+            scene2Buttons.style.display = 'none';
+            scene1Buttons.style.display = 'flex';
             backButton.style.display = 'block';
+            
+            // Play background music if sound is on
+            if (soundOn) {
+                backgroundMusic.play();
+            }
+            
+            // Update game state
+            currentScene = 'scene1';
         }
         
-        // Snooze function
-        function snoozeAlarm() {
-            alert('You hit snooze... but the baby will cry again in 5 minutes!');
-            // Here you could add more game logic or transition to another screen
+        // Go to Scene 2 (video)
+        function goToScene2() {
+            // Stop meditation if active
+            stopMeditation();
+            
+            // Hide other screens
+            videoScreen1.classList.remove('active');
+            videoScreen2.classList.remove('active');
+            videoScreen4.classList.remove('active');
+            video1.pause();
+            video2.pause();
+            video4.pause();
+            
+            // Show Scene 2 video
+            videoScreen3.classList.add('active');
+            video3.play();
+            video3.muted = !soundOn;
+            
+            // Show Scene 2 buttons
+            titleButtons.style.display = 'none';
+            scene1Buttons.style.display = 'none';
+            scene2Buttons.style.display = 'flex';
+            backButton.style.display = 'block';
+            
+            // Play background music if sound is on
+            if (soundOn && !meditating) {
+                backgroundMusic.play();
+            }
+            
+            // Update game state
+            currentScene = 'scene2';
         }
         
-        // Ignore function
-        function ignoreAlarm() {
-            alert('Trying to ignore the baby... CHAOS meter increases!');
-            // Here you could add more game logic or transition to another screen
+        // Go to Scene 3 (video)
+        function goToScene3() {
+            // Stop meditation if active
+            stopMeditation();
+            
+            // Hide other screens
+            videoScreen1.classList.remove('active');
+            videoScreen2.classList.remove('active');
+            videoScreen3.classList.remove('active');
+            video1.pause();
+            video2.pause();
+            video3.pause();
+            
+            // Show Scene 3 video
+            videoScreen4.classList.add('active');
+            video4.play();
+            video4.muted = !soundOn;
+            
+            // Hide all buttons except back
+            titleButtons.style.display = 'none';
+            scene1Buttons.style.display = 'none';
+            scene2Buttons.style.display = 'none';
+            backButton.style.display = 'block';
+            
+            // Play background music if sound is on
+            if (soundOn) {
+                backgroundMusic.play();
+            }
+            
+            // Update game state
+            currentScene = 'scene3';
         }
         
-        // Back to character select function
-        function goBack() {
-            nightScreen.classList.remove('active');
-            characterScreen.classList.add('active');
-            startButton.style.display = 'block';
-            snoozeButton.style.display = 'none';
-            ignoreButton.style.display = 'none';
+        // Go back to title
+        function goToTitle() {
+            // Stop meditation if active
+            stopMeditation();
+            
+            // Hide all scenes
+            videoScreen2.classList.remove('active');
+            videoScreen3.classList.remove('active');
+            videoScreen4.classList.remove('active');
+            video2.pause();
+            video3.pause();
+            video4.pause();
+            
+            // Show title screen
+            videoScreen1.classList.add('active');
+            video1.play();
+            video1.muted = !soundOn;
+            
+            // Show title buttons
+            scene1Buttons.style.display = 'none';
+            scene2Buttons.style.display = 'none';
+            titleButtons.style.display = 'flex';
             backButton.style.display = 'none';
+            
+            // Play background music if sound is on
+            if (soundOn) {
+                backgroundMusic.play();
+            }
+            
+            // Update game state
+            currentScene = 'title';
         }
+        
+        // Start meditation
+        function startMeditation() {
+            if (meditating) return;
+            
+            meditating = true;
+            
+            // Pause background music and play meditation music
+            backgroundMusic.pause();
+            meditationMusic.currentTime = 0;
+            if (soundOn) {
+                meditationMusic.play();
+            }
+            
+            // Show timer
+            meditationTimer.style.display = 'block';
+            
+            // Calculate total seconds (2:39 = 159 seconds)
+            let totalSeconds = 159;
+            
+            // Update timer display
+            function updateTimer() {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                meditationTimer.textContent = `Meditation: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                if (totalSeconds <= 0) {
+                    stopMeditation();
+                } else {
+                    totalSeconds--;
+                }
+            }
+            
+            // Initial timer display
+            updateTimer();
+            
+            // Set interval to update timer
+            meditationInterval = setInterval(updateTimer, 1000);
+            
+            // Set timeout to automatically stop meditation when music ends
+            setTimeout(stopMeditation, 159000); // 2:39 = 159 seconds
+        }
+        
+        // Stop meditation
+        function stopMeditation() {
+            if (!meditating) return;
+            
+            meditating = false;
+            
+            // Stop timer interval
+            clearInterval(meditationInterval);
+            
+            // Hide timer
+            meditationTimer.style.display = 'none';
+            
+            // Pause meditation music
+            meditationMusic.pause();
+            
+            // Resume background music if sound is on
+            if (soundOn) {
+                backgroundMusic.play();
+            }
+        }
+        
+        // Handler for start button
+        function handleStart() {
+            goToScene1();
+        }
+        
+        // Handler for snooze button
+        function handleSnooze() {
+            alert('You hit snooze... but the baby will cry again in 5 minutes!');
+        }
+        
+        // Handler for ignore button
+        function handleIgnore() {
+            alert('Stop playing girl, get up!');
+            goToScene2();
+        }
+        
+        // Handler for meditate button
+        function handleMeditate() {
+            startMeditation();
+        }
+        
+        // Handler for get out button
+        function handleGetOut() {
+            goToScene3();
+        }
+        
+        // Handler for back button
+        function handleBack() {
+            if (currentScene === 'scene1') {
+                goToTitle();
+            } else if (currentScene === 'scene2') {
+                goToScene1();
+            } else if (currentScene === 'scene3') {
+                goToScene2();
+            }
+        }
+        
+        // Sound toggle button click
+        soundToggle.addEventListener('click', function() {
+            // Try to play background music
+            backgroundMusic.play().then(() => {
+                toggleSound();
+            }).catch(e => {
+                console.log("Audio play failed, this is normal on first click for mobile:", e);
+                toggleSound();
+            });
+        });
         
         // Add event listeners
-        startButton.addEventListener('click', startGame);
-        snoozeButton.addEventListener('click', snoozeAlarm);
-        ignoreButton.addEventListener('click', ignoreAlarm);
-        backButton.addEventListener('click', goBack);
+        startButton.addEventListener('click', handleStart);
+        snoozeButton.addEventListener('click', handleSnooze);
+        ignoreButton.addEventListener('click', handleIgnore);
+        meditateButton.addEventListener('click', handleMeditate);
+        getoutButton.addEventListener('click', handleGetOut);
+        backButton.addEventListener('click', handleBack);
+        
+        // Handle meditation music end
+        meditationMusic.addEventListener('ended', function() {
+            stopMeditation();
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', resizeVideos);
+        
+        // Start the title video when page loads
+        video1.play().catch(e => {
+            console.log("Autoplay failed, this is normal:", e);
+        });
+        
+        // Initial resize
+        resizeVideos();
+        
+        // Mobile autoplay helper
+        document.addEventListener('click', function startAudioSession() {
+            video1.play().catch(e => console.log("Still can't play, need button click:", e));
+            document.removeEventListener('click', startAudioSession);
+        }, { once: true });
     </script>
 </body>
 </html>
